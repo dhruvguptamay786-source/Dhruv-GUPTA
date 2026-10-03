@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ElevenLabs AI Narrator | Text-to-Speech Studio</title>
+  <meta name="description" content="Transform any text into natural, lifelike AI voice narration using ElevenLabs models and voices.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Background Glow Orbs -->
+  <div class="glow-orb orb-primary" aria-hidden="true"></div>
+  <div class="glow-orb orb-secondary" aria-hidden="true"></div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <div class="app-layout">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="brand-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.477 2 2 6.477 2 12C2 17.523 6.477 22 12 22C17.523 22 22 17.523 22 12C22 6.477 17.523 2 12 2Z" fill="url(#brand-grad)" opacity="0.15"/>
+            <path d="M8 9V15M12 5V19M16 8V16M20 11V13M4 11V13" stroke="url(#brand-grad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <defs>
+              <linearGradient id="brand-grad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#818cf8"/>
+                <stop offset="0.5" stop-color="#6366f1"/>
+                <stop offset="1" stop-color="#ec4899"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="brand-titles">
+          <h1 class="brand-name">ElevenLabs AI Narrator</h1>
+          <p class="brand-subtitle">Transform text into natural, lifelike AI narration</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- API Status Badge -->
+        <div id="api-status-badge" class="status-badge status-checking" title="Checking ElevenLabs API status">
+          <span class="status-dot"></span>
+          <span id="api-status-text" class="status-text">Checking API...</span>
+        </div>
+
+        <!-- Help / Quick Guide Button -->
+        <button id="btn-open-guide" class="btn-icon-subtle" title="API Setup & Documentation" aria-label="API Setup & Documentation">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- API Key Notice Banner (Hidden when key is configured) -->
+    <div id="api-warning-banner" class="banner-notice banner-hidden" role="alert">
+      <div class="banner-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <div class="banner-content">
+        <strong>ElevenLabs API Key Required:</strong> Add your <code>ELEVENLABS_API_KEY</code> in the <code>.env</code> file to generate live speech.
+      </div>
+      <button id="btn-banner-guide" class="banner-action-btn">Setup Guide</button>
+    </div>
+
+    <!-- Main Container Card -->
+    <main class="main-card">
+
+      <!-- SECTION 1: Text Input -->
+      <section class="card-section text-input-section" aria-labelledby="heading-text-input">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <h2 id="heading-text-input" class="section-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              Text to Narrate
+            </h2>
+            <span class="section-hint">Type or paste any text to convert into speech</span>
+          </div>
+
+          <!-- Quick Samples Selector -->
+          <div class="quick-samples">
+            <span class="samples-label">Samples:</span>
+            <button type="button" class="btn-sample-chip" data-sample="story">Story</button>
+            <button type="button" class="btn-sample-chip" data-sample="tech">Tech</button>
+            <button type="button" class="btn-sample-chip" data-sample="quote">Quote</button>
+            <button type="button" class="btn-sample-chip" data-sample="announcement">Promo</button>
+          </div>
+        </div>
+
+        <div class="textarea-container">
+          <textarea
+            id="text-input"
+            class="narration-textarea"
+            rows="6"
+            placeholder="Paste or type your text here... Enter sentences, paragraphs, or long-form scripts to generate lifelike AI narration."
+            aria-label="Text to synthesize into speech"
+            maxlength="10000"
+          ></textarea>
+        </div>
+
+        <!-- Textarea Footer / Counter / Actions -->
+        <div class="textarea-footer">
+          <div class="character-counter-group">
+            <span id="char-count" class="char-count">0</span>
+            <span class="char-limit">/ 10,000 characters</span>
+            <div id="char-progress" class="char-progress-bar">
+              <div id="char-progress-fill" class="char-progress-fill" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div class="text-actions">
+            <button id="btn-paste-text" class="btn-text-action" type="button" title="Paste from clipboard">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+              </svg>
+              Paste
+            </button>
+            <button id="btn-clear-text" class="btn-text-action" type="button" title="Clear text area">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              Clear
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 2: Voice Settings -->
+      <section class="card-section voice-settings-section" aria-labelledby="heading-voice-settings">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <h2 id="heading-voice-settings" class="section-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+              </svg>
+              Narration Settings
+            </h2>
+            <span class="section-hint">Select AI voice, model, and voice tuning parameters</span>
+          </div>
+
+          <button id="btn-reset-settings" class="btn-text-action" type="button" title="Reset settings to ElevenLabs defaults">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+            </svg>
+            Reset Defaults
+          </button>
+        </div>
+
+        <!-- Primary Dropdowns: Model & Voice -->
+        <div class="dropdowns-grid">
+          <!-- 1. MODEL DROPDOWN -->
+          <div class="form-group">
+            <div class="label-row">
+              <label for="model-select" class="form-label">
+                Select Narration Model
+              </label>
+              <span id="model-badge" class="meta-pill">Best Quality</span>
+            </div>
+            <div class="select-wrapper">
+              <select id="model-select" class="form-select" aria-label="Select Narration Model">
+                <option value="eleven_multilingual_v2" selected>Eleven Multilingual v2 (Recommended)</option>
+                <option value="eleven_flash_v2_5">Eleven Flash v2.5 (Ultra-Fast ~75ms)</option>
+                <option value="eleven_turbo_v2_5">Eleven Turbo v2.5 (Balanced)</option>
+                <option value="eleven_turbo_v2">Eleven Turbo v2 (English Fast)</option>
+                <option value="eleven_monolingual_v1">Eleven Monolingual v1 (Classic)</option>
+              </select>
+              <div class="select-chevron" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </div>
+            <p id="model-description" class="form-help-text">
+              State-of-the-art multilingual model with 29+ languages. Ideal for audiobooks and expressive narration.
+            </p>
+          </div>
+
+          <!-- 2. VOICE DROPDOWN -->
+          <div class="form-group">
+            <div class="label-row">
+              <label for="voice-select" class="form-label">
+                Select Voice
+              </label>
+              <!-- Voice Preview Audio Button -->
+              <button id="btn-preview-voice" class="btn-voice-preview" type="button" title="Listen to voice sample preview">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                Preview Sample
+              </button>
+            </div>
+            <div class="select-wrapper">
+              <select id="voice-select" class="form-select" aria-label="Select Voice">
+                <option value="" disabled selected>Loading voices...</option>
+              </select>
+              <div class="select-chevron" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </div>
+            <p id="voice-description" class="form-help-text">
+              Calm • American • Narration
+            </p>
+          </div>
+        </div>
+
+        <!-- 3. OPTIONAL VOICE SETTINGS (Sliders & Toggles) -->
+        <div class="voice-tuning-card">
+          <div class="tuning-card-header">
+            <span class="tuning-title">Fine-Tune Voice Output</span>
+            <span class="tuning-subtitle">Customize voice stability, similarity, and expressive dynamics</span>
+          </div>
+
+          <div class="sliders-grid">
+            <!-- Stability Slider -->
+            <div class="slider-control">
+              <div class="slider-header">
+                <div class="slider-label-wrap">
+                  <label for="slider-stability" class="slider-title">Stability</label>
+                  <span class="slider-tooltip" title="Higher values make voice more consistent and calm; lower values make it more dynamic and expressive.">ℹ</span>
+                </div>
+                <span id="val-stability" class="slider-value-badge">0.50</span>
+              </div>
+              <input
+                type="range"
+                id="slider-stability"
+                class="range-slider"
+                min="0"
+                max="1"
+                step="0.01"
+                value="0.50"
+                aria-label="Stability"
+              >
+              <div class="slider-markers">
+                <span>More Expressive</span>
+                <span>Balanced</span>
+                <span>More Stable</span>
+              </div>
+            </div>
+
+            <!-- Similarity Slider -->
+            <div class="slider-control">
+              <div class="slider-header">
+                <div class="slider-label-wrap">
+                  <label for="slider-similarity" class="slider-title">Similarity / Clarity</label>
+                  <span class="slider-tooltip" title="Higher values adhere closer to original speaker voice; lower values allow more AI variation.">ℹ</span>
+                </div>
+                <span id="val-similarity" class="slider-value-badge">0.75</span>
+              </div>
+              <input
+                type="range"
+                id="slider-similarity"
+                class="range-slider"
+                min="0"
+                max="1"
+                step="0.01"
+                value="0.75"
+                aria-label="Similarity / Clarity"
+              >
+              <div class="slider-markers">
+                <span>Low</span>
+                <span>Standard</span>
+                <span>High Adherence</span>
+              </div>
+            </div>
+
+            <!-- Style Exaggeration Slider -->
+            <div class="slider-control">
+              <div class="slider-header">
+                <div class="slider-label-wrap">
+                  <label for="slider-style" class="slider-title">Style Exaggeration</label>
+                  <span class="slider-tooltip" title="Amplifies unique speaking style and dramatic tone (v2/v2.5 models). Keep near 0 for natural speaking.">ℹ</span>
+                </div>
+                <span id="val-style" class="slider-value-badge">0.00</span>
+              </div>
+              <input
+                type="range"
+                id="slider-style"
+                class="range-slider"
+                min="0"
+                max="1"
+                step="0.01"
+                value="0.00"
+                aria-label="Style Exaggeration"
+              >
+              <div class="slider-markers">
+                <span>Natural (0.00)</span>
+                <span>Subtle</span>
+                <span>Dramatic (1.00)</span>
+              </div>
+            </div>
+
+            <!-- Speaker Boost Toggle -->
+            <div class="toggle-control">
+              <div class="toggle-info">
+                <label for="toggle-speaker-boost" class="slider-title">Speaker Boost</label>
+                <span class="toggle-desc">Boosts clarity, presence, and volume normalization</span>
+              </div>
+              <label class="switch-toggle" for="toggle-speaker-boost">
+                <input type="checkbox" id="toggle-speaker-boost" checked aria-label="Toggle Speaker Boost">
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3: Generate & Play CTA -->
+      <section class="card-section generate-action-section">
+        <button id="btn-generate" class="btn-generate-primary" type="button">
+          <!-- Default State -->
+          <span class="btn-content-default">
+            <svg class="btn-play-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span class="btn-label-text">Generate & Play</span>
+          </span>
+
+          <!-- Loading State (hidden initially) -->
+          <span class="btn-content-loading" style="display: none;">
+            <svg class="spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.25"></circle>
+              <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-linecap="round"></path>
+            </svg>
+            <span class="btn-label-text">Generating narration...</span>
+          </span>
+        </button>
+
+        <!-- Generation status message -->
+        <div id="generation-status" class="generation-status-text" aria-live="polite"></div>
+      </section>
+
+      <!-- SECTION 4: Audio Player -->
+      <section id="audio-player-section" class="card-section audio-player-section" aria-labelledby="heading-audio-player">
+        <div class="player-header">
+          <div class="player-title-wrap">
+            <h2 id="heading-audio-player" class="player-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+              </svg>
+              Audio Player
+            </h2>
+            <div id="player-track-info" class="player-track-info">
+              <span id="player-voice-name" class="track-badge">Ready for generation</span>
+              <span id="player-model-name" class="track-sub">Select text and click Generate & Play</span>
+            </div>
+          </div>
+
+          <!-- Download Audio Button -->
+          <button id="btn-download" class="btn-download-audio" type="button" disabled title="Download generated narration as MP3">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Download Audio</span>
+          </button>
+        </div>
+
+        <!-- Custom Audio Player Bar -->
+        <div class="custom-player-wrapper">
+          <!-- Play / Pause Main Button -->
+          <button id="btn-play-pause" class="btn-player-play" type="button" disabled aria-label="Play or pause audio">
+            <!-- Play SVG -->
+            <svg id="icon-play" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <!-- Pause SVG -->
+            <svg id="icon-pause" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+              <rect x="6" y="4" width="4" height="16" rx="1"></rect>
+              <rect x="14" y="4" width="4" height="16" rx="1"></rect>
+            </svg>
+          </button>
+
+          <!-- Waveform Visualizer & Seek Bar Container -->
+          <div class="player-timeline-container">
+            <div class="waveform-animation" id="waveform-visualizer" aria-hidden="true">
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+            </div>
+
+            <!-- Custom Seekbar Slider -->
+            <div class="seekbar-wrapper">
+              <input
+                type="range"
+                id="audio-seekbar"
+                class="audio-seekbar"
+                min="0"
+                max="100"
+                value="0"
+                step="0.1"
+                disabled
+                aria-label="Audio progress slider"
+              >
+              <div id="seekbar-fill" class="seekbar-fill" style="width: 0%"></div>
+            </div>
+
+            <!-- Time Display: Current / Total -->
+            <div class="timeline-meta">
+              <span id="time-current" class="time-readout">00:00</span>
+              <span class="time-separator">/</span>
+              <span id="time-duration" class="time-readout">00:00</span>
+            </div>
+          </div>
+
+          <!-- Right Controls: Volume & Speed -->
+          <div class="player-controls-secondary">
+            <!-- Volume Control -->
+            <div class="volume-control-group">
+              <button id="btn-volume-toggle" class="btn-control-icon" type="button" title="Mute/Unmute audio">
+                <!-- Volume High SVG -->
+                <svg id="icon-vol-high" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                </svg>
+                <!-- Volume Muted SVG -->
+                <svg id="icon-vol-muted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                </svg>
+              </button>
+              <input
+                type="range"
+                id="volume-slider"
+                class="volume-slider"
+                min="0"
+                max="1"
+                step="0.05"
+                value="1"
+                aria-label="Audio volume"
+              >
+            </div>
+
+            <!-- Playback Speed Selector -->
+            <div class="speed-selector-group">
+              <label for="speed-select" class="speed-label">Speed</label>
+              <select id="speed-select" class="speed-select" aria-label="Playback speed">
+                <option value="0.75">0.75x</option>
+                <option value="1" selected>1.0x</option>
+                <option value="1.25">1.25x</option>
+                <option value="1.5">1.5x</option>
+                <option value="2">2.0x</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hidden Native Audio Elements for playback -->
+        <audio id="main-audio-element" preload="auto"></audio>
+        <audio id="preview-audio-element" preload="none"></audio>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Powered by <strong>ElevenLabs Text-to-Speech API</strong> • Secure backend architecture with zero frontend key exposure.</p>
+    </footer>
+  </div>
+
+  <!-- API Guide & Instructions Modal -->
+  <div id="modal-guide" class="modal-backdrop" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modal-guide-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </div>
+          <div>
+            <h3 id="modal-guide-title" class="modal-title">ElevenLabs API Configuration</h3>
+            <p class="modal-subtitle">Secure server-side API key configuration</p>
+          </div>
+        </div>
+        <button id="btn-close-modal" class="btn-modal-close" aria-label="Close modal">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="guide-step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h4>Obtain an ElevenLabs API Key</h4>
+            <p>Visit <a href="https://elevenlabs.io" target="_blank" rel="noopener noreferrer">elevenlabs.io</a>, sign in or sign up, click your profile icon in the bottom-left, select <strong>API Keys</strong>, and click <strong>Create API Key</strong>.</p>
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h4>Add Key to <code>.env</code> in Project Root</h4>
+            <p>Open the <code>.env</code> file in the project folder and paste your key:</p>
+            <div class="code-snippet-box">
+              <code>ELEVENLABS_API_KEY=your_actual_api_key_here</code>
+            </div>
+            <p class="security-note">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              <strong>Security:</strong> The API key stays securely in your server backend and is never sent to the browser or stored in client code.
+            </p>
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h4>Restart the Backend Server</h4>
+            <p>In your terminal, restart the server with:</p>
+            <div class="code-snippet-box">
+              <code>npm start</code>
+            </div>
+            <p>Then refresh this page. Your live voices and custom cloned voices will load automatically!</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="btn-modal-done" class="btn-modal-primary" type="button">Understood</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
