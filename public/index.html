@@ -88,6 +88,143 @@
     <!-- Main Container Card -->
     <main class="main-card">
 
+      <!-- SECTION 0: Interactive Animated AI Avatar Narrator Companion -->
+      <section class="card-section avatar-showcase-section persona-nova" id="avatar-section" aria-label="Interactive AI Voice Avatar">
+        <div class="avatar-hero-container">
+          <!-- Left: 3D/SVG Animated Avatar -->
+          <div class="avatar-interactive-wrapper" id="avatar-interactive" title="Click me to interact!">
+            <!-- Holographic Aura & Sound Rings -->
+            <div class="avatar-sound-ripples" id="avatar-sound-ripples" aria-hidden="true">
+              <span class="sound-ring ring-1"></span>
+              <span class="sound-ring ring-2"></span>
+              <span class="sound-ring ring-3"></span>
+            </div>
+
+            <!-- Rotating Orbital Energy Ring -->
+            <div class="avatar-orbit-ring" id="avatar-orbit-ring" aria-hidden="true"></div>
+
+            <!-- SVG Animated Avatar Figure -->
+            <div class="avatar-figure" id="avatar-figure">
+              <svg class="avatar-svg" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="av-face-grad" x1="20" y1="20" x2="140" y2="140" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#1e1b4b"/>
+                    <stop offset="0.5" stop-color="#312e81"/>
+                    <stop offset="1" stop-color="#0f172a"/>
+                  </linearGradient>
+                  <linearGradient id="av-glow-grad" x1="0" y1="0" x2="160" y2="160" gradientUnits="userSpaceOnUse">
+                    <stop class="av-glow-stop-1" stop-color="#6366f1"/>
+                    <stop class="av-glow-stop-2" offset="0.5" stop-color="#8b5cf6"/>
+                    <stop class="av-glow-stop-3" offset="1" stop-color="#ec4899"/>
+                  </linearGradient>
+                  <linearGradient id="av-visor-grad" x1="40" y1="65" x2="120" y2="95" gradientUnits="userSpaceOnUse">
+                    <stop class="av-visor-stop-1" stop-color="#06b6d4" stop-opacity="0.95"/>
+                    <stop class="av-visor-stop-2" offset="0.5" stop-color="#3b82f6" stop-opacity="0.95"/>
+                    <stop class="av-visor-stop-3" offset="1" stop-color="#8b5cf6" stop-opacity="0.95"/>
+                  </linearGradient>
+                  <filter id="av-glow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="3.5" result="glow"/>
+                    <feComposite in="SourceGraphic" in2="glow" operator="over"/>
+                  </filter>
+                </defs>
+
+                <!-- Floating Hologram Base Disk -->
+                <ellipse cx="80" cy="148" rx="46" ry="10" fill="url(#av-glow-grad)" opacity="0.35" class="avatar-hologram-disk"/>
+
+                <!-- Neck & Shoulders Armor -->
+                <path d="M46 138 C46 118 60 110 80 110 C100 110 114 118 114 138 L122 152 L38 152 Z" fill="#1e293b" stroke="url(#av-glow-grad)" stroke-width="2"/>
+                <path d="M72 108 L72 122 L88 122 L88 108 Z" fill="#0f172a"/>
+
+                <!-- Head Silhouette -->
+                <rect x="42" y="32" width="76" height="80" rx="38" fill="url(#av-face-grad)" stroke="url(#av-glow-grad)" stroke-width="2.5" class="avatar-head"/>
+
+                <!-- Cyber Visor / Eye Display -->
+                <rect x="48" y="58" width="64" height="28" rx="14" fill="#030712" stroke="url(#av-visor-grad)" stroke-width="2" class="avatar-visor"/>
+                <g class="avatar-eyes" id="avatar-eyes">
+                  <!-- Left Eye -->
+                  <circle cx="68" cy="72" r="5.5" fill="#38bdf8" filter="url(#av-glow)" class="avatar-eye left-eye"/>
+                  <circle cx="68" cy="72" r="2.2" fill="#ffffff" class="avatar-pupil left-pupil"/>
+                  <!-- Right Eye -->
+                  <circle cx="92" cy="72" r="5.5" fill="#38bdf8" filter="url(#av-glow)" class="avatar-eye right-eye"/>
+                  <circle cx="92" cy="72" r="2.2" fill="#ffffff" class="avatar-pupil right-pupil"/>
+                </g>
+
+                <!-- Animated Speaking Mouth / Sound Bars -->
+                <g class="avatar-mouth-group" id="avatar-mouth">
+                  <!-- Idle Mouth Curve -->
+                  <path d="M70 98 Q80 102 90 98" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" fill="none" class="avatar-mouth-idle"/>
+                  <!-- Speaking Audio Wave Mouth (active during playback) -->
+                  <g class="avatar-mouth-speaking" id="avatar-mouth-speaking">
+                    <line x1="68" y1="98" x2="68" y2="98" stroke="#ec4899" stroke-width="3" stroke-linecap="round" class="mouth-wave mw-1"/>
+                    <line x1="74" y1="98" x2="74" y2="98" stroke="#a855f7" stroke-width="3" stroke-linecap="round" class="mouth-wave mw-2"/>
+                    <line x1="80" y1="98" x2="80" y2="98" stroke="#38bdf8" stroke-width="3.5" stroke-linecap="round" class="mouth-wave mw-3"/>
+                    <line x1="86" y1="98" x2="86" y2="98" stroke="#a855f7" stroke-width="3" stroke-linecap="round" class="mouth-wave mw-4"/>
+                    <line x1="92" y1="98" x2="92" y2="98" stroke="#ec4899" stroke-width="3" stroke-linecap="round" class="mouth-wave mw-5"/>
+                  </g>
+                </g>
+
+                <!-- Cyber Headset Antennas / Audio Nodes -->
+                <!-- Left Node -->
+                <rect x="36" y="58" width="7" height="26" rx="3.5" fill="#6366f1" filter="url(#av-glow)" class="avatar-headset-node left"/>
+                <line x1="39" y1="50" x2="39" y2="58" stroke="#818cf8" stroke-width="2"/>
+                <circle cx="39" cy="48" r="3.2" fill="#ec4899" class="antenna-light left"/>
+
+                <!-- Right Node -->
+                <rect x="117" y="58" width="7" height="26" rx="3.5" fill="#6366f1" filter="url(#av-glow)" class="avatar-headset-node right"/>
+                <line x1="121" y1="50" x2="121" y2="58" stroke="#818cf8" stroke-width="2"/>
+                <circle cx="121" cy="48" r="3.2" fill="#ec4899" class="antenna-light right"/>
+              </svg>
+            </div>
+
+            <!-- Avatar Mood Indicator -->
+            <div class="avatar-status-tag" id="avatar-status-tag">
+              <span class="avatar-status-dot"></span>
+              <span class="avatar-status-label" id="avatar-status-label">Nova • Idle</span>
+            </div>
+          </div>
+
+          <!-- Right: Avatar Dialogue & Persona Controls -->
+          <div class="avatar-info-panel">
+            <div class="avatar-speech-bubble" id="avatar-speech-bubble">
+              <div class="bubble-tail"></div>
+              <p class="bubble-text" id="avatar-speech-text">
+                "Hello! I am your AI Voice Narrator. Select an ElevenLabs voice below, paste your script, and let's bring your words to life!"
+              </p>
+            </div>
+
+            <div class="avatar-controls-row">
+              <div class="persona-selector">
+                <span class="persona-label">Avatar Persona:</span>
+                <div class="persona-chips">
+                  <button type="button" class="btn-persona-chip active" data-persona="nova" title="Nova - Cyber AI Assistant">
+                    <span class="persona-emoji">🤖</span> Nova
+                  </button>
+                  <button type="button" class="btn-persona-chip" data-persona="aria" title="Aria - Warm Studio Narrator">
+                    <span class="persona-emoji">🎙️</span> Aria
+                  </button>
+                  <button type="button" class="btn-persona-chip" data-persona="atlas" title="Atlas - Deep Voice Powerhouse">
+                    <span class="persona-emoji">⚡</span> Atlas
+                  </button>
+                  <button type="button" class="btn-persona-chip" data-persona="echo" title="Echo - Neural Synthesizer">
+                    <span class="persona-emoji">🔮</span> Echo
+                  </button>
+                </div>
+              </div>
+
+              <!-- Interactive Voice Wave Visualizer Mini -->
+              <div class="avatar-mini-eq" id="avatar-mini-eq" aria-hidden="true">
+                <span class="eq-bar"></span>
+                <span class="eq-bar"></span>
+                <span class="eq-bar"></span>
+                <span class="eq-bar"></span>
+                <span class="eq-bar"></span>
+                <span class="eq-bar"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- SECTION 1: Text Input -->
       <section class="card-section text-input-section" aria-labelledby="heading-text-input">
         <div class="section-header">

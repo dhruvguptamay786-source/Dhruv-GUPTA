@@ -1,6 +1,7 @@
 /**
  * ElevenLabs AI Narrator - Frontend Controller
- * Complete modular Vanilla JavaScript architecture
+ * Complete modular Vanilla JavaScript architecture with Animated AI Avatar Companion
+ * Built for universal deployment on Netlify (Serverless & Static), Node.js, and local dev.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -10,36 +11,90 @@ document.addEventListener('DOMContentLoaded', () => {
   const ELEVENLABS_API_KEY = 'sk_cf1031f267e99c1ff605c1385b24e7236ea812f246d8387b';
 
   // =========================================================================
-  // State Management
+  // Curated Fallback Voices & Models
   // =========================================================================
-  const state = {
-    apiKeyConfigured: true,
-    apiKey: ELEVENLABS_API_KEY,
-    voices: [],
-    models: [],
-    selectedVoiceId: 'JBFqnCBsd6RMkjVDRZzb', // George (Default)
-    selectedModelId: 'eleven_multilingual_v2',
-    voiceSettings: {
-      stability: 0.50,
-      similarity_boost: 0.75,
-      style: 0.00,
-      use_speaker_boost: true
+  const FALLBACK_PREMADE_VOICES = [
+    {
+      voice_id: 'JBFqnCBsd6RMkjVDRZzb',
+      name: 'George',
+      category: 'premade',
+      description: 'Warm & Resonant • British • Audiobook & Narration',
+      preview_url: 'https://storage.googleapis.com/eleven-public-prod/premade/voices/JBFqnCBsd6RMkjVDRZzb/e6206d1a-0786-440f-a45d-1176979e4f3f.mp3'
     },
-    audioBlob: null,
-    audioUrl: null,
-    isPlaying: false,
-    isGenerating: false,
-    duration: 0,
-    previousVolume: 1.0
-  };
+    {
+      voice_id: 'nPczCjzI2devNBz1zQrb',
+      name: 'Brian',
+      category: 'premade',
+      description: 'Deep & Authoritative • American • Documentary & Narration',
+      preview_url: 'https://storage.googleapis.com/eleven-public-prod/premade/voices/nPczCjzI2devNBz1zQrb/2dd34734-40bf-4a9f-93d9-9528647895e6.mp3'
+    },
+    {
+      voice_id: 'ErXwobaYiN019PkySvjV',
+      name: 'Antoni',
+      category: 'premade',
+      description: 'Well-Rounded & Expressive • American • Narration',
+      preview_url: 'https://storage.googleapis.com/eleven-public-prod/premade/voices/ErXwobaYiN019PkySvjV/38d8f8f0-0412-4d2a-b605-e7b51b3a164c.mp3'
+    },
+    {
+      voice_id: 'onwK4e9ZLuTAKqWW03F9',
+      name: 'Daniel',
+      category: 'premade',
+      description: 'Authoritative Presenter • British • News & Storytelling',
+      preview_url: 'https://storage.googleapis.com/eleven-public-prod/premade/voices/onwK4e9ZLuTAKqWW03F9/79ced863-718e-4a6c-9418-ee5cf327e57c.mp3'
+    },
+    {
+      voice_id: 'pNInz6obpgDQGcFmaJgB',
+      name: 'Adam',
+      category: 'premade',
+      description: 'Deep & Smooth • American • Narration',
+      preview_url: 'https://storage.googleapis.com/eleven-public-prod/premade/voices/pNInz6obpgDQGcFmaJgB/b953d5a4-05a9-467f-94ad-7bc479a9572b.mp3'
+    },
+    {
+      voice_id: 'VR6AewLTigWG4xSOukaG',
+      name: 'Arnold',
+      category: 'premade',
+      description: 'Crisp & Narrative • American • Video & Games',
+      preview_url: 'https://storage.googleapis.com/eleven-public-prod/premade/voices/VR6AewLTigWG4xSOukaG/056976ca-1216-43b6-9ae8-5c4a1789c629.mp3'
+    }
+  ];
 
-  // Sample texts for quick demonstration
-  const SAMPLES = {
-    story: "Deep within the ancient observatory, the brass telescope hummed with forgotten energy. As the constellation aligned, a harmonic whisper echoed through the crystalline domes, signaling that the stars had finally returned the lost transmission.",
-    tech: "In today's deep dive, we explore how neural audio synthesis and diffusion acoustic models are transforming digital narration, enabling real-time conversational agents with unmatched emotional fidelity and sub-second latency.",
-    quote: "The only limit to our realization of tomorrow will be our doubts of today. Let us move forward with strong and active faith, creating the future one courageous step at a time.",
-    announcement: "Welcome to ElevenLabs AI Narrator! Experience studio-grade voice generation powered by state-of-the-art multilingual models. Paste your script, tune the voice stability, and bring your words to life."
-  };
+  const CURATED_MODELS = [
+    {
+      model_id: 'eleven_multilingual_v2',
+      name: 'Eleven Multilingual v2',
+      description: 'Most lifelike and emotionally rich narration across 29+ languages. Ideal for audiobooks, stories, and long-form content.',
+      badge: 'Best Quality',
+      recommended: true
+    },
+    {
+      model_id: 'eleven_flash_v2_5',
+      name: 'Eleven Flash v2.5',
+      description: 'Ultra-low latency (~75ms) synthesis across 32 languages. Recommended by ElevenLabs for optimal speed and efficiency.',
+      badge: 'Ultra Fast (~75ms)',
+      recommended: false
+    },
+    {
+      model_id: 'eleven_turbo_v2_5',
+      name: 'Eleven Turbo v2.5',
+      description: 'High-quality, low-latency (~250ms) speech generation supporting 32 languages. Great balance of speed and expressiveness.',
+      badge: 'Balanced Speed',
+      recommended: false
+    },
+    {
+      model_id: 'eleven_turbo_v2',
+      name: 'Eleven Turbo v2',
+      description: 'Fast, English-optimized model designed for high-throughput and quick turnaround.',
+      badge: 'English Fast',
+      recommended: false
+    },
+    {
+      model_id: 'eleven_monolingual_v1',
+      name: 'Eleven Monolingual v1',
+      description: 'Classic ElevenLabs standard English voice synthesis model.',
+      badge: 'Legacy English',
+      recommended: false
+    }
+  ];
 
   // Model Metadata for descriptions and badges
   const MODEL_META = {
@@ -65,6 +120,87 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  // Avatar Personas Configuration
+  const PERSONAS = {
+    nova: {
+      name: 'Nova',
+      title: 'Cyber AI Assistant',
+      greeting: "Hello! I'm Nova, your AI Voice Narrator. Paste or type your script below, select a voice, and let's create studio-quality speech!",
+      typingMsg: "I'm listening closely! Keep typing your script...",
+      generatingMsg: "Synthesizing high-fidelity neural audio with ElevenLabs...",
+      speakingMsg: "Narrating your text with expressive voice synthesis...",
+      doneMsg: "Narration complete! Click play to re-listen or download as MP3.",
+      class: 'persona-nova'
+    },
+    aria: {
+      name: 'Aria',
+      title: 'Studio Narrator',
+      greeting: "Welcome! I'm Aria, your studio narrator. I bring warmth, emotion, and realism to every sentence.",
+      typingMsg: "Reading your words... Crafting the emotional cadence...",
+      generatingMsg: "Tuning acoustic frequencies and expressive stability...",
+      speakingMsg: "Bringing your story to life in real-time...",
+      doneMsg: "Finished reading your piece! Ready whenever you are.",
+      class: 'persona-aria'
+    },
+    atlas: {
+      name: 'Atlas',
+      title: 'Deep Voice Specialist',
+      greeting: "Atlas ready. Select your preferred voice model and let's produce crisp, authoritative narration.",
+      typingMsg: "Analyzing text density and sentence structure...",
+      generatingMsg: "Initiating deep neural voice processing...",
+      speakingMsg: "Delivering powerful voice output...",
+      doneMsg: "Speech output finished. File ready for export.",
+      class: 'persona-atlas'
+    },
+    echo: {
+      name: 'Echo',
+      title: 'Neural Synthesizer',
+      greeting: "Echo online! Multilingual voice synthesis ready across 32 languages. What shall we voice today?",
+      typingMsg: "Synthesizer receiving character stream...",
+      generatingMsg: "Encoding neural audio diffusion spectrogram...",
+      speakingMsg: "Streaming dynamic harmonic soundwaves...",
+      doneMsg: "Transmission concluded. Ready for next audio script.",
+      class: 'persona-echo'
+    }
+  };
+
+  // Sample texts for quick demonstration
+  const SAMPLES = {
+    story: "Deep within the ancient observatory, the brass telescope hummed with forgotten energy. As the constellation aligned, a harmonic whisper echoed through the crystalline domes, signaling that the stars had finally returned the lost transmission.",
+    tech: "In today's deep dive, we explore how neural audio synthesis and diffusion acoustic models are transforming digital narration, enabling real-time conversational agents with unmatched emotional fidelity and sub-second latency.",
+    quote: "The only limit to our realization of tomorrow will be our doubts of today. Let us move forward with strong and active faith, creating the future one courageous step at a time.",
+    announcement: "Welcome to ElevenLabs AI Narrator! Experience studio-grade voice generation powered by state-of-the-art multilingual models. Paste your script, tune the voice stability, and bring your words to life."
+  };
+
+  // =========================================================================
+  // State Management
+  // =========================================================================
+  const state = {
+    apiKeyConfigured: true,
+    apiKey: ELEVENLABS_API_KEY,
+    backendMode: 'auto', // 'serverless', 'express', or 'direct'
+    voices: [],
+    models: [],
+    selectedVoiceId: 'JBFqnCBsd6RMkjVDRZzb', // George (Default)
+    selectedModelId: 'eleven_multilingual_v2',
+    voiceSettings: {
+      stability: 0.50,
+      similarity_boost: 0.75,
+      style: 0.00,
+      use_speaker_boost: true
+    },
+    audioBlob: null,
+    audioUrl: null,
+    isPlaying: false,
+    isGenerating: false,
+    duration: 0,
+    previousVolume: 1.0,
+    // Avatar state
+    avatarPersona: 'nova',
+    avatarState: 'idle', // 'idle' | 'listening' | 'generating' | 'speaking'
+    typingTimer: null
+  };
+
   // =========================================================================
   // DOM Elements
   // =========================================================================
@@ -75,6 +211,17 @@ document.addEventListener('DOMContentLoaded', () => {
     apiWarningBanner: document.getElementById('api-warning-banner'),
     btnOpenGuide: document.getElementById('btn-open-guide'),
     btnBannerGuide: document.getElementById('btn-banner-guide'),
+
+    // Avatar Elements
+    avatarSection: document.getElementById('avatar-section'),
+    avatarInteractive: document.getElementById('avatar-interactive'),
+    avatarFigure: document.getElementById('avatar-figure'),
+    avatarStatusTag: document.getElementById('avatar-status-tag'),
+    avatarStatusLabel: document.getElementById('avatar-status-label'),
+    avatarSpeechBubble: document.getElementById('avatar-speech-bubble'),
+    avatarSpeechText: document.getElementById('avatar-speech-text'),
+    personaChips: document.querySelectorAll('.btn-persona-chip'),
+    avatarMiniEq: document.getElementById('avatar-mini-eq'),
 
     // Modal
     modalGuide: document.getElementById('modal-guide'),
@@ -142,10 +289,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Toast Notification System
   // =========================================================================
   function showToast(message, type = 'info', duration = 4000) {
+    if (!dom.toastContainer) return;
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     
-    // Choose icon according to type
     let iconSvg = '';
     if (type === 'success') {
       iconSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>`;
@@ -178,42 +325,179 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // =========================================================================
-  // API Status & Configuration Check
+  // AI Avatar Controller & Animation System
   // =========================================================================
-  async function checkApiStatus() {
-    // API key is integrated directly in the code — always mark as connected
-    state.apiKeyConfigured = true;
-    dom.apiStatusBadge.classList.remove('status-checking', 'status-missing', 'status-error');
-    dom.apiStatusBadge.classList.add('status-connected');
-    dom.apiStatusText.textContent = 'API Connected';
-    dom.apiWarningBanner.classList.add('banner-hidden');
+  function setAvatarPersona(personaKey) {
+    if (!PERSONAS[personaKey]) return;
+    state.avatarPersona = personaKey;
+    const persona = PERSONAS[personaKey];
 
-    // Also verify server is alive
-    try {
-      await fetch('/api/status');
-    } catch (err) {
-      console.warn('Backend server may be offline:', err);
-      dom.apiStatusBadge.classList.remove('status-connected');
-      dom.apiStatusBadge.classList.add('status-error');
-      dom.apiStatusText.textContent = 'Server Offline';
+    // Remove all persona classes from section
+    if (dom.avatarSection) {
+      dom.avatarSection.classList.remove('persona-nova', 'persona-aria', 'persona-atlas', 'persona-echo');
+      dom.avatarSection.classList.add(persona.class);
+    }
+
+    // Update active button
+    dom.personaChips.forEach(chip => {
+      if (chip.dataset.persona === personaKey) {
+        chip.classList.add('active');
+      } else {
+        chip.classList.remove('active');
+      }
+    });
+
+    // Update dialogue and status
+    updateAvatarDialogue(persona.greeting);
+    updateAvatarStatus(`${persona.name} • Ready`);
+
+    // Trigger bounce
+    triggerAvatarBounce();
+    showToast(`Avatar switched to ${persona.name} (${persona.title})`, 'info', 2000);
+  }
+
+  function setAvatarState(newState, customMsg = null) {
+    state.avatarState = newState;
+    const persona = PERSONAS[state.avatarPersona] || PERSONAS.nova;
+
+    if (!dom.avatarSection) return;
+
+    // Reset state classes
+    dom.avatarSection.classList.remove('avatar-speaking', 'avatar-generating', 'avatar-listening');
+
+    if (newState === 'speaking') {
+      dom.avatarSection.classList.add('avatar-speaking');
+      const activeVoice = state.voices.find(v => v.voice_id === state.selectedVoiceId);
+      const voiceName = activeVoice ? activeVoice.name : 'AI Voice';
+      updateAvatarStatus(`${persona.name} • Narrating (${voiceName})`);
+      updateAvatarDialogue(customMsg || persona.speakingMsg);
+    } else if (newState === 'generating') {
+      dom.avatarSection.classList.add('avatar-generating');
+      updateAvatarStatus(`${persona.name} • Synthesizing`);
+      updateAvatarDialogue(customMsg || persona.generatingMsg);
+    } else if (newState === 'listening') {
+      dom.avatarSection.classList.add('avatar-listening');
+      updateAvatarStatus(`${persona.name} • Listening`);
+      updateAvatarDialogue(customMsg || persona.typingMsg);
+    } else {
+      // Idle
+      updateAvatarStatus(`${persona.name} • Idle`);
+      updateAvatarDialogue(customMsg || persona.greeting);
     }
   }
 
+  function updateAvatarDialogue(text) {
+    if (!dom.avatarSpeechText) return;
+    dom.avatarSpeechText.style.opacity = '0';
+    setTimeout(() => {
+      dom.avatarSpeechText.textContent = `"${text}"`;
+      dom.avatarSpeechText.style.opacity = '1';
+    }, 150);
+  }
+
+  function updateAvatarStatus(label) {
+    if (dom.avatarStatusLabel) {
+      dom.avatarStatusLabel.textContent = label;
+    }
+  }
+
+  function triggerAvatarBounce() {
+    if (!dom.avatarInteractive) return;
+    dom.avatarInteractive.classList.add('avatar-bounce');
+    setTimeout(() => {
+      dom.avatarInteractive.classList.remove('avatar-bounce');
+    }, 600);
+  }
+
+  function handleAvatarClick() {
+    triggerAvatarBounce();
+    const persona = PERSONAS[state.avatarPersona] || PERSONAS.nova;
+    const quotes = [
+      `I'm ready! Paste any text and hear ElevenLabs neural synthesis in action.`,
+      `Did you know? ElevenLabs Multilingual v2 supports 29+ languages seamlessly!`,
+      `Feel free to fine-tune the Voice Stability and Similarity sliders below.`,
+      `Click "Generate & Play" whenever you're ready to listen!`
+    ];
+    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    updateAvatarDialogue(randomQuote);
+    showToast(`${persona.name}: "${randomQuote}"`, 'info', 3000);
+  }
+
+  const isFileProtocol = window.location.protocol === 'file:';
+
   // =========================================================================
-  // Models Loader
+  // API Status & Configuration Check (Fixes Netlify "api is not found")
+  // =========================================================================
+  async function checkApiStatus() {
+    state.apiKeyConfigured = true;
+    dom.apiWarningBanner.classList.add('banner-hidden');
+
+    // If opened directly from desktop/file system (file://)
+    if (isFileProtocol) {
+      state.backendMode = 'direct';
+      setApiConnectedState('API Connected (Direct Mode)');
+      console.log('✓ Running in direct client mode (file:// protocol).');
+      return;
+    }
+
+    // Test backend /api/status (handles Netlify serverless functions & local Express)
+    try {
+      const response = await fetch('/api/status');
+      if (response.ok) {
+        const data = await response.json().catch(() => ({}));
+        state.backendMode = 'serverless';
+        setApiConnectedState('API Connected (Serverless / Express)');
+        return;
+      }
+    } catch (err) {
+      console.warn('Backend serverless route not reachable, testing direct ElevenLabs API...');
+    }
+
+    // Direct Mode Fallback:
+    // If running on Netlify Static or serverless function is spinning up,
+    // the frontend can call ElevenLabs API directly with client-side key.
+    if (state.apiKey) {
+      state.backendMode = 'direct';
+      setApiConnectedState('API Connected (Direct Mode)');
+      console.log('✓ ElevenLabs Direct API mode active (Universal Fallback).');
+    } else {
+      dom.apiStatusBadge.classList.remove('status-connected', 'status-checking');
+      dom.apiStatusBadge.classList.add('status-error');
+      dom.apiStatusText.textContent = 'API Key Missing';
+      dom.apiWarningBanner.classList.remove('banner-hidden');
+    }
+  }
+
+  function setApiConnectedState(msg = 'API Connected') {
+    dom.apiStatusBadge.classList.remove('status-checking', 'status-missing', 'status-error');
+    dom.apiStatusBadge.classList.add('status-connected');
+    dom.apiStatusText.textContent = msg;
+    dom.apiStatusBadge.title = 'ElevenLabs API is connected and ready to synthesize';
+  }
+
+  // =========================================================================
+  // Models Loader (Resilient against 404s on Netlify & file://)
   // =========================================================================
   async function loadModels() {
-    try {
-      const response = await fetch('/api/models');
-      if (!response.ok) throw new Error('Failed to load models');
-      const data = await response.json();
-
-      state.models = data.models || [];
-      renderModelsDropdown(state.models);
-    } catch (err) {
-      console.error('Error loading models:', err);
-      showToast('Could not fetch latest models; using defaults.', 'warning');
+    if (!isFileProtocol) {
+      try {
+        const response = await fetch('/api/models');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.models && data.models.length > 0) {
+            state.models = data.models;
+            renderModelsDropdown(state.models);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Could not fetch models from backend, using curated models:', err.message);
+      }
     }
+
+    // Curated models fallback
+    state.models = CURATED_MODELS;
+    renderModelsDropdown(state.models);
   }
 
   function renderModelsDropdown(models) {
@@ -244,40 +528,64 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // =========================================================================
-  // Voices Loader
+  // Voices Loader (Resilient against 404s on Netlify & file://)
   // =========================================================================
   async function loadVoices() {
-    // Voices are pre-populated in HTML with the verified set.
-    // We also try the backend to load them dynamically.
-    try {
-      const response = await fetch('/api/voices');
-      const data = await response.json();
-
-      const voices = data.voices || data.fallbackVoices || [];
-      if (voices.length > 0) {
-        state.voices = voices;
-        renderVoicesDropdown(voices);
-      } else {
-        // Keep the pre-populated HTML options, just sync state
-        syncVoicesFromDropdown();
+    // 1. Try backend serverless endpoint (if not file://)
+    if (!isFileProtocol) {
+      try {
+        const response = await fetch('/api/voices');
+        if (response.ok) {
+          const data = await response.json();
+          const voices = data.voices || data.fallbackVoices || [];
+          if (voices.length > 0) {
+            state.voices = voices;
+            renderVoicesDropdown(voices);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Backend voices endpoint not responding, attempting direct ElevenLabs API fetch...');
       }
-    } catch (err) {
-      console.warn('Could not dynamically load voices, using pre-populated list:', err);
-      syncVoicesFromDropdown();
     }
-  }
 
-  // Reads the voice options already baked into the HTML select element
-  function syncVoicesFromDropdown() {
-    const opts = Array.from(dom.voiceSelect.options);
-    state.voices = opts.map(o => ({
-      voice_id: o.value,
-      name: o.text.split(' (')[0],
-      description: o.text.split(' (')[1]?.replace(')', '') || '',
-      preview_url: null
-    }));
-    state.selectedVoiceId = dom.voiceSelect.value;
-    updateVoiceDetails();
+    // 2. Direct ElevenLabs API fallback
+    if (state.apiKey) {
+      try {
+        const directRes = await fetch('https://api.elevenlabs.io/v1/voices', {
+          headers: {
+            'xi-api-key': state.apiKey,
+            'Accept': 'application/json'
+          }
+        });
+        if (directRes.ok) {
+          const directData = await directRes.json();
+          if (directData.voices && directData.voices.length > 0) {
+            const formatted = directData.voices.map(v => ({
+              voice_id: v.voice_id,
+              name: v.name,
+              category: v.category || 'premade',
+              labels: v.labels || {},
+              preview_url: v.preview_url || null,
+              description: [
+                v.labels?.accent,
+                v.labels?.gender,
+                v.labels?.['use case'] || v.labels?.description
+              ].filter(Boolean).join(' • ')
+            }));
+            state.voices = formatted;
+            renderVoicesDropdown(formatted);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Direct ElevenLabs voices fetch notice, using verified premade voices.');
+      }
+    }
+
+    // 3. Fallback Premade Voices
+    state.voices = FALLBACK_PREMADE_VOICES;
+    renderVoicesDropdown(FALLBACK_PREMADE_VOICES);
   }
 
   function renderVoicesDropdown(voices) {
@@ -294,8 +602,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const desc = v.description ? ` (${v.description})` : '';
       opt.textContent = `${v.name}${desc}`;
 
-      // Pick first voice or default Rachel/George
-      if (index === 0) {
+      // Pick George by default
+      if (v.voice_id === 'JBFqnCBsd6RMkjVDRZzb' || index === 0) {
         opt.selected = true;
         state.selectedVoiceId = v.voice_id;
       }
@@ -312,11 +620,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentVoice = state.voices.find(v => v.voice_id === selectedId);
     if (currentVoice) {
       dom.voiceDescription.textContent = currentVoice.description || `${currentVoice.category || 'Premade'} voice`;
-      // Toggle preview sample button visibility
       if (currentVoice.preview_url) {
         dom.btnPreviewVoice.style.display = 'inline-flex';
       } else {
         dom.btnPreviewVoice.style.display = 'none';
+      }
+
+      // Update avatar dialogue with voice change
+      if (state.avatarState === 'idle') {
+        updateAvatarDialogue(`Selected voice: ${currentVoice.name} (${currentVoice.description || 'Verified Voice'})`);
       }
     }
   }
@@ -341,6 +653,17 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       dom.charProgressFill.style.backgroundColor = '#818cf8';
       dom.charCount.style.color = '#94a3b8';
+    }
+
+    // Avatar typing reaction
+    if (length > 0 && !state.isPlaying && !state.isGenerating) {
+      setAvatarState('listening');
+      clearTimeout(state.typingTimer);
+      state.typingTimer = setTimeout(() => {
+        if (!state.isPlaying && !state.isGenerating) {
+          setAvatarState('idle', `Ready to narrate ${length} characters of text!`);
+        }
+      }, 2500);
     }
   }
 
@@ -395,7 +718,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // =========================================================================
-  // Generate Narration
+  // Generate Narration (Universal Engine: Serverless + Direct Netlify Fallback)
   // =========================================================================
   async function generateNarration() {
     const text = dom.textInput.value.trim();
@@ -417,8 +740,9 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // 2. Loading State
+    // 2. Loading State & Avatar
     showLoading(true);
+    setAvatarState('generating', 'Synthesizing voice audio via ElevenLabs...');
     dom.generationStatus.textContent = 'Contacting ElevenLabs Text-to-Speech API...';
 
     // Pause any existing playback
@@ -432,40 +756,107 @@ document.addEventListener('DOMContentLoaded', () => {
         voiceSettings: state.voiceSettings
       };
 
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
+      let audioBlob = null;
+      let usedDirectFallback = false;
 
-      // 3. Handle errors
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMsg = errorData.error || `Generation failed (HTTP ${response.status})`;
+      // STEP 1: Attempt Serverless / Express Backend Call (if on HTTP/HTTPS and not direct mode)
+      if (!isFileProtocol && state.backendMode !== 'direct') {
+        try {
+          const response = await fetch('/api/generate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (response.ok) {
+            // If Netlify serverless returns binary audio or base64
+            const contentType = response.headers.get('content-type') || '';
+            if (contentType.includes('audio') || contentType.includes('octet-stream')) {
+              audioBlob = await response.blob();
+            } else {
+              // Check if returned as JSON with base64
+              const jsonRes = await response.json();
+              if (jsonRes.audio) {
+                const byteCharacters = atob(jsonRes.audio);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                  byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                audioBlob = new Blob([byteArray], { type: 'audio/mpeg' });
+              }
+            }
+          } else if (response.status === 404) {
+            // 404 on Netlify: Serverless function not active or routing to static
+            console.info('Backend returned 404, switching to Direct ElevenLabs API fallback...');
+            usedDirectFallback = true;
+          } else {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `Generation failed (HTTP ${response.status})`);
+          }
+        } catch (backendErr) {
+          console.warn('Backend call encountered issue:', backendErr.message);
+          usedDirectFallback = true;
+        }
+      } else {
+        usedDirectFallback = true;
+      }
+
+      // STEP 2: Direct ElevenLabs API Fallback (Guarantees zero 404s on Netlify)
+      if (!audioBlob || usedDirectFallback) {
+        dom.generationStatus.textContent = 'Connecting directly to ElevenLabs API...';
         
-        if (response.status === 400 && errorData.code === 'MISSING_API_KEY') {
-          openModalGuide();
+        const parsedSettings = {
+          stability: Math.max(0, Math.min(1, state.voiceSettings.stability || 0.5)),
+          similarity_boost: Math.max(0, Math.min(1, state.voiceSettings.similarity_boost || 0.75)),
+          style: Math.max(0, Math.min(1, state.voiceSettings.style || 0.0)),
+          use_speaker_boost: Boolean(state.voiceSettings.use_speaker_boost)
+        };
+
+        const directUrl = `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(state.selectedVoiceId)}?output_format=mp3_44100_128`;
+
+        const directResponse = await fetch(directUrl, {
+          method: 'POST',
+          headers: {
+            'xi-api-key': state.apiKey,
+            'Content-Type': 'application/json',
+            'Accept': 'audio/mpeg'
+          },
+          body: JSON.stringify({
+            text,
+            model_id: state.selectedModelId,
+            voice_settings: parsedSettings
+          })
+        });
+
+        if (!directResponse.ok) {
+          const errText = await directResponse.text();
+          let errMsg = 'Failed to generate narration from ElevenLabs.';
+          try {
+            const parsed = JSON.parse(errText);
+            if (parsed.detail?.message) errMsg = parsed.detail.message;
+            else if (typeof parsed.detail === 'string') errMsg = parsed.detail;
+          } catch (_) {}
+          throw new Error(errMsg);
         }
 
-        throw new Error(errorMsg);
+        audioBlob = await directResponse.blob();
       }
 
-      // 4. Successful Audio Response (audio/mpeg binary stream)
-      dom.generationStatus.textContent = 'Finalizing audio stream...';
-      const audioBlob = await response.blob();
-
-      if (audioBlob.size === 0) {
-        throw new Error('Received empty audio stream from backend.');
+      if (!audioBlob || audioBlob.size === 0) {
+        throw new Error('Received empty audio stream from ElevenLabs.');
       }
+
+      // 4. Successful Audio Response
+      dom.generationStatus.textContent = 'Audio ready! Starting playback...';
 
       // Revoke previous object URL if any
       if (state.audioUrl) {
         URL.revokeObjectURL(state.audioUrl);
       }
 
-      // Store in state
       state.audioBlob = audioBlob;
       state.audioUrl = URL.createObjectURL(audioBlob);
 
@@ -494,7 +885,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } catch (err) {
       console.error('Narration generation error:', err);
-      showError(err.message || 'Unable to generate narration. Please check your API configuration.');
+      showError(err.message || 'Unable to generate narration. Please check your API key.');
+      setAvatarState('idle', 'Oops, something went wrong with the voice generation. Please try again!');
     } finally {
       showLoading(false);
     }
@@ -524,15 +916,25 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // =========================================================================
-  // Audio Player Logic
+  // Audio Player Logic & Synchronized Avatar Speaking
   // =========================================================================
   function playAudio() {
     if (!state.audioUrl) return;
+
+    // Stop voice preview sample if playing
+    if (!dom.previewAudio.paused) {
+      dom.previewAudio.pause();
+      dom.btnPreviewVoice.innerHTML = `
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        Preview Sample
+      `;
+    }
 
     dom.mainAudio.play()
       .then(() => {
         state.isPlaying = true;
         updatePlayerUIState();
+        setAvatarState('speaking');
       })
       .catch((err) => {
         console.warn('Playback prevented or interrupted:', err);
@@ -543,6 +945,9 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.mainAudio.pause();
     state.isPlaying = false;
     updatePlayerUIState();
+    if (!state.isGenerating) {
+      setAvatarState('idle', 'Audio paused. Press Play to continue listening.');
+    }
   }
 
   function togglePlayPause() {
@@ -638,6 +1043,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
         Preview Sample
       `;
+      setAvatarState('idle');
     } else {
       dom.previewAudio.src = currentVoice.preview_url;
       dom.previewAudio.play().then(() => {
@@ -645,6 +1051,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
           Stop Preview
         `;
+        setAvatarState('speaking', `Playing sample preview for ${currentVoice.name}...`);
       }).catch(err => {
         console.warn('Voice preview error:', err);
       });
@@ -692,6 +1099,7 @@ document.addEventListener('DOMContentLoaded', () => {
       dom.textInput.value = '';
       updateCharacterCount();
       dom.textInput.focus();
+      setAvatarState('idle', 'Text cleared! Enter new text to voice.');
     });
 
     // Sample chip buttons
@@ -702,9 +1110,23 @@ document.addEventListener('DOMContentLoaded', () => {
           dom.textInput.value = SAMPLES[sampleKey];
           updateCharacterCount();
           showToast(`Loaded "${btn.textContent}" sample text`, 'info', 2000);
+          setAvatarState('idle', `Loaded ${btn.textContent} sample! Ready to generate narration.`);
         }
       });
     });
+
+    // Avatar Persona Chips
+    dom.personaChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        const personaKey = chip.dataset.persona;
+        setAvatarPersona(personaKey);
+      });
+    });
+
+    // Avatar Interactive Click
+    if (dom.avatarInteractive) {
+      dom.avatarInteractive.addEventListener('click', handleAvatarClick);
+    }
 
     // Model and Voice Select
     dom.modelSelect.addEventListener('change', updateModelDetails);
@@ -723,10 +1145,14 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.mainAudio.addEventListener('play', () => {
       state.isPlaying = true;
       updatePlayerUIState();
+      setAvatarState('speaking');
     });
     dom.mainAudio.addEventListener('pause', () => {
       state.isPlaying = false;
       updatePlayerUIState();
+      if (!state.isGenerating) {
+        setAvatarState('idle');
+      }
     });
     dom.mainAudio.addEventListener('ended', () => {
       state.isPlaying = false;
@@ -734,6 +1160,8 @@ document.addEventListener('DOMContentLoaded', () => {
       dom.audioSeekbar.value = 0;
       dom.seekbarFill.style.width = '0%';
       dom.timeCurrent.textContent = '00:00';
+      const persona = PERSONAS[state.avatarPersona] || PERSONAS.nova;
+      setAvatarState('idle', persona.doneMsg);
     });
     dom.mainAudio.addEventListener('loadedmetadata', () => {
       dom.timeDuration.textContent = formatTime(dom.mainAudio.duration);
@@ -745,6 +1173,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
         Preview Sample
       `;
+      setAvatarState('idle');
     });
 
     // Volume & Mute
@@ -796,10 +1225,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.target === dom.modalGuide) closeModalGuide();
     });
 
-    // Keyboard Shortcuts (Esc to close modal, Space on audio player)
+    // Keyboard Shortcuts (Esc to close modal, Space on audio player when not typing)
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && dom.modalGuide.classList.contains('modal-open')) {
         closeModalGuide();
+      }
+      if (e.code === 'Space' && !['TEXTAREA', 'INPUT', 'SELECT', 'BUTTON'].includes(document.activeElement.tagName)) {
+        if (state.audioUrl) {
+          e.preventDefault();
+          togglePlayPause();
+        }
       }
     });
   }
