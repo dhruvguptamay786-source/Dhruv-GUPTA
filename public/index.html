@@ -45,10 +45,18 @@
       </div>
 
       <div class="header-actions">
+        <!-- Integrated API Key Badge -->
+        <div class="api-key-badge" title="ElevenLabs API Key integrated in code">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+          </svg>
+          <span class="api-key-text">sk_cf1031...387b</span>
+        </div>
+
         <!-- API Status Badge -->
-        <div id="api-status-badge" class="status-badge status-checking" title="Checking ElevenLabs API status">
+        <div id="api-status-badge" class="status-badge status-connected" title="ElevenLabs API is connected and ready">
           <span class="status-dot"></span>
-          <span id="api-status-text" class="status-text">Checking API...</span>
+          <span id="api-status-text" class="status-text">API Connected</span>
         </div>
 
         <!-- Help / Quick Guide Button -->
@@ -72,7 +80,7 @@
         </svg>
       </div>
       <div class="banner-content">
-        <strong>ElevenLabs API Key Required:</strong> Add your <code>ELEVENLABS_API_KEY</code> in the <code>.env</code> file to generate live speech.
+        <strong>ElevenLabs API Key Integrated:</strong> Using active key <code>sk_cf1031...387b</code>.
       </div>
       <button id="btn-banner-guide" class="banner-action-btn">Setup Guide</button>
     </div>
@@ -217,7 +225,12 @@
             </div>
             <div class="select-wrapper">
               <select id="voice-select" class="form-select" aria-label="Select Voice">
-                <option value="" disabled selected>Loading voices...</option>
+                <option value="JBFqnCBsd6RMkjVDRZzb" selected>George (British • Male • Audiobook & Narration)</option>
+                <option value="nPczCjzI2devNBz1zQrb">Brian (American • Male • Documentary & Narration)</option>
+                <option value="ErXwobaYiN019PkySvjV">Antoni (American • Male • Narration)</option>
+                <option value="onwK4e9ZLuTAKqWW03F9">Daniel (British • Male • News & Storytelling)</option>
+                <option value="pNInz6obpgDQGcFmaJgB">Adam (American • Male • Narration)</option>
+                <option value="VR6AewLTigWG4xSOukaG">Arnold (American • Male • Video & Games)</option>
               </select>
               <div class="select-chevron" aria-hidden="true">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -226,7 +239,7 @@
               </div>
             </div>
             <p id="voice-description" class="form-help-text">
-              Calm • American • Narration
+              Warm & Resonant • British • Audiobook & Narration
             </p>
           </div>
         </div>

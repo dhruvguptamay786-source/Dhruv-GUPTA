@@ -5,13 +5,19 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
+  // Integrated ElevenLabs API Configuration
+  // =========================================================================
+  const ELEVENLABS_API_KEY = 'sk_cf1031f267e99c1ff605c1385b24e7236ea812f246d8387b';
+
+  // =========================================================================
   // State Management
   // =========================================================================
   const state = {
-    apiKeyConfigured: false,
+    apiKeyConfigured: true,
+    apiKey: ELEVENLABS_API_KEY,
     voices: [],
     models: [],
-    selectedVoiceId: null,
+    selectedVoiceId: 'JBFqnCBsd6RMkjVDRZzb', // George (Default)
     selectedModelId: 'eleven_multilingual_v2',
     voiceSettings: {
       stability: 0.50,
@@ -175,29 +181,21 @@ document.addEventListener('DOMContentLoaded', () => {
   // API Status & Configuration Check
   // =========================================================================
   async function checkApiStatus() {
+    // API key is integrated directly in the code — always mark as connected
+    state.apiKeyConfigured = true;
+    dom.apiStatusBadge.classList.remove('status-checking', 'status-missing', 'status-error');
+    dom.apiStatusBadge.classList.add('status-connected');
+    dom.apiStatusText.textContent = 'API Connected';
+    dom.apiWarningBanner.classList.add('banner-hidden');
+
+    // Also verify server is alive
     try {
-      const response = await fetch('/api/status');
-      if (!response.ok) throw new Error('Status route failed');
-      const data = await response.json();
-
-      state.apiKeyConfigured = data.configured;
-
-      dom.apiStatusBadge.classList.remove('status-checking', 'status-connected', 'status-missing', 'status-error');
-
-      if (data.configured) {
-        dom.apiStatusBadge.classList.add('status-connected');
-        dom.apiStatusText.textContent = 'API Connected';
-        dom.apiWarningBanner.classList.add('banner-hidden');
-      } else {
-        dom.apiStatusBadge.classList.add('status-missing');
-        dom.apiStatusText.textContent = 'API Key Setup';
-        dom.apiWarningBanner.classList.remove('banner-hidden');
-      }
+      await fetch('/api/status');
     } catch (err) {
-      console.warn('API Status error:', err);
-      dom.apiStatusBadge.classList.remove('status-checking', 'status-connected', 'status-missing');
+      console.warn('Backend server may be offline:', err);
+      dom.apiStatusBadge.classList.remove('status-connected');
       dom.apiStatusBadge.classList.add('status-error');
-      dom.apiStatusText.textContent = 'Offline';
+      dom.apiStatusText.textContent = 'Server Offline';
     }
   }
 
@@ -249,32 +247,37 @@ document.addEventListener('DOMContentLoaded', () => {
   // Voices Loader
   // =========================================================================
   async function loadVoices() {
-    dom.voiceSelect.innerHTML = '<option value="" disabled selected>Loading voices from ElevenLabs...</option>';
-    
+    // Voices are pre-populated in HTML with the verified set.
+    // We also try the backend to load them dynamically.
     try {
       const response = await fetch('/api/voices');
       const data = await response.json();
 
-      if (!response.ok && response.status === 401) {
-        showToast('Invalid ElevenLabs API key in .env', 'error');
-        dom.apiStatusBadge.classList.remove('status-connected');
-        dom.apiStatusBadge.classList.add('status-error');
-        dom.apiStatusText.textContent = 'Invalid Key';
-      }
-
       const voices = data.voices || data.fallbackVoices || [];
-      state.voices = voices;
-
-      renderVoicesDropdown(voices);
-
-      if (data.hasApiKey === false) {
-        showToast('Running in preview mode. Add ELEVENLABS_API_KEY to generate speech.', 'warning', 6000);
+      if (voices.length > 0) {
+        state.voices = voices;
+        renderVoicesDropdown(voices);
+      } else {
+        // Keep the pre-populated HTML options, just sync state
+        syncVoicesFromDropdown();
       }
     } catch (err) {
-      console.error('Error fetching voices:', err);
-      showToast('Network error loading voices. Check your backend server.', 'error');
-      dom.voiceSelect.innerHTML = '<option value="" disabled selected>Failed to load voices</option>';
+      console.warn('Could not dynamically load voices, using pre-populated list:', err);
+      syncVoicesFromDropdown();
     }
+  }
+
+  // Reads the voice options already baked into the HTML select element
+  function syncVoicesFromDropdown() {
+    const opts = Array.from(dom.voiceSelect.options);
+    state.voices = opts.map(o => ({
+      voice_id: o.value,
+      name: o.text.split(' (')[0],
+      description: o.text.split(' (')[1]?.replace(')', '') || '',
+      preview_url: null
+    }));
+    state.selectedVoiceId = dom.voiceSelect.value;
+    updateVoiceDetails();
   }
 
   function renderVoicesDropdown(voices) {

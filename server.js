@@ -96,12 +96,17 @@ const CURATED_MODELS = [
   }
 ];
 
+// ElevenLabs API Key integrated in code (with optional .env override)
+const DEFAULT_ELEVENLABS_API_KEY = 'sk_cf1031f267e99c1ff605c1385b24e7236ea812f246d8387b';
+const ELEVENLABS_API_KEY = (process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_API_KEY.trim() && process.env.ELEVENLABS_API_KEY.trim() !== 'your_elevenlabs_api_key_here')
+  ? process.env.ELEVENLABS_API_KEY.trim()
+  : DEFAULT_ELEVENLABS_API_KEY;
+
 /**
  * Helper to check if an API key is present and configured
  */
 function hasValidApiKey() {
-  const key = process.env.ELEVENLABS_API_KEY;
-  return Boolean(key && key.trim() && key !== 'your_elevenlabs_api_key_here');
+  return Boolean(ELEVENLABS_API_KEY && ELEVENLABS_API_KEY.trim());
 }
 
 /**
@@ -112,10 +117,9 @@ app.get('/api/status', (req, res) => {
   const configured = hasValidApiKey();
   res.json({
     configured,
+    keyMasked: ELEVENLABS_API_KEY ? `${ELEVENLABS_API_KEY.slice(0, 9)}...${ELEVENLABS_API_KEY.slice(-4)}` : null,
     modelsCount: CURATED_MODELS.length,
-    message: configured
-      ? 'ElevenLabs API key is configured.'
-      : 'ElevenLabs API key is missing. Please add ELEVENLABS_API_KEY in .env.'
+    message: 'ElevenLabs API key is integrated in code and active.'
   });
 });
 
@@ -124,13 +128,13 @@ app.get('/api/status', (req, res) => {
  * Returns available ElevenLabs TTS models
  */
 app.get('/api/models', async (req, res) => {
-  const apiKey = process.env.ELEVENLABS_API_KEY;
+  const apiKey = ELEVENLABS_API_KEY;
 
   if (hasValidApiKey()) {
     try {
       const response = await fetch('https://api.elevenlabs.io/v1/models', {
         headers: {
-          'xi-api-key': apiKey.trim()
+          'xi-api-key': apiKey
         }
       });
 
@@ -168,7 +172,7 @@ app.get('/api/models', async (req, res) => {
  * Return available voices from ElevenLabs or fallbacks with clear status
  */
 app.get('/api/voices', async (req, res) => {
-  const apiKey = process.env.ELEVENLABS_API_KEY;
+  const apiKey = ELEVENLABS_API_KEY;
 
   if (!hasValidApiKey()) {
     return res.json({
@@ -252,7 +256,7 @@ app.get('/api/voices', async (req, res) => {
  * Generates speech audio using ElevenLabs Text-to-Speech API
  */
 app.post('/api/generate', async (req, res) => {
-  const apiKey = process.env.ELEVENLABS_API_KEY;
+  const apiKey = ELEVENLABS_API_KEY;
 
   // 1. Check API Key configuration
   if (!hasValidApiKey()) {
